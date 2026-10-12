@@ -20,7 +20,7 @@ export function getSupabaseAdmin(): SupabaseClient | null {
 
   cached = createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
-    global: { headers: { "x-application-name": "hamr.fun" } },
+    global: { headers: { "x-application-name": "koki.ai" } },
   });
   return cached;
 }

@@ -1,12 +1,38 @@
-import BoardGrid from "@/components/landing/BoardGrid";
+import PageHeader from "@/components/shell/PageHeader";
+import { ButtonLink } from "@/components/ui/Button";
+import LaunchesTable from "@/components/launches/LaunchesTable";
+import { Rocket } from "lucide-react";
 
-// Skip prerender — the wagmi provider in RootLayout initializes
-// WalletConnect which touches indexedDB during hydration.
-export const dynamic = "force-dynamic";
-
-// /launches — the public board. Same live grid as the home page: DB
-// rows merged with tokens read straight from the factory contract, so
-// every launch shows up here no matter how it was made.
 export default function LaunchHistoryPage() {
-  return <BoardGrid />;
+  return (
+    <>
+      <PageHeader
+        eyebrow="Public board"
+        title="All Launches"
+        description="Every memecoin every KOKi agent has shipped, across all wallets. Newest first. Click any token to open the live monitor on Pump.fun."
+        breadcrumbs={[
+          { href: "/", label: "KOKi" },
+          { label: "All Launches" },
+        ]}
+        actions={
+          <ButtonLink href="/launch">
+            <Rocket className="h-4 w-4" />
+            Ship your own
+          </ButtonLink>
+        }
+      />
+
+      <section className="mx-auto max-w-7xl px-6 py-10">
+        <LaunchesTable />
+
+        <p className="mt-8 text-xs text-ink-300/55 text-center">
+          To see only your own launches, head to{" "}
+          <a href="/dashboard" className="font-extrabold underline">
+            My Launches
+          </a>
+          .
+        </p>
+      </section>
+    </>
+  );
 }

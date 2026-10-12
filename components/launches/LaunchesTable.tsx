@@ -1,121 +1,152 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import Image from "next/image";
-import { ArrowUpRight, Rocket } from "lucide-react";
+import Link from "next/link";
+import { ExternalLink } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { usePumpCoin, formatMcUsd } from "@/lib/hooks/usePumpCoin";
 
-// Public /launches board. Reads from /api/launches which now returns
-// EVM-shaped rows out of pons_launches. Empty state pitches the launch
-// flow instead of pretending it's temporarily unavailable.
+// Public 'All Launches' gallery, shows every memecoin every KOKi agent
+// has shipped, across all wallets. Hits /api/launches with no `wallet`
+// param; the API returns the global list (filtered to status='launched',
+// mock=false) so this is a real social-proof / discovery surface, not a
+// duplicate of the user's My Launches dashboard.
 
 interface PublicLaunch {
-  token_address: string;
-  pool_address: string | null;
+  mint_pubkey: string;
   ticker: string;
   token_name: string;
-  logo_url: string | null;
-  wallet_address: string;
+  chain: string;
+  status: string;
+  pump_url: string | null;
+  metadata_uri: string | null;
+  wallet_pubkey: string;
   created_at: string;
-  pons_url: string | null;
-  explorer_url: string | null;
 }
 
 export default function LaunchesTable() {
   const [items, setItems] = useState<PublicLaunch[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     fetch("/api/launches", { cache: "no-store" })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json: { ok?: boolean; launches?: PublicLaunch[] } | null) => {
-        if (cancelled || !json || !json.ok) return;
+      .then((r) => r.json())
+      .then((json: { ok: boolean; launches?: PublicLaunch[]; error?: string }) => {
+        if (cancelled) return;
+        if (!json.ok) {
+          setError(json.error || "Failed to load launches");
+          setItems([]);
+          return;
+        }
         setItems(json.launches ?? []);
       })
-      .catch(() => setItems([]));
+      .catch((err) => {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Network error");
+        setItems([]);
+      });
     return () => {
       cancelled = true;
     };
   }, []);
 
   if (items === null) {
-    return (
-      <section className="mx-auto max-w-6xl px-6 py-12">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card !p-0 overflow-hidden animate-pulse">
-              <div className="aspect-square w-full bg-koki-500/40 border-b border-[var(--border-strong)]" />
-              <div className="p-3.5 space-y-2">
-                <div className="h-3.5 bg-ink-1000/10 rounded w-3/4" />
-                <div className="h-2.5 bg-ink-1000/10 rounded w-1/2" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-    );
+    return <SkeletonGrid />;
   }
 
   if (items.length === 0) {
     return (
-      <section className="mx-auto max-w-4xl px-6 py-16">
-        <div className="card !p-10 text-center">
-          <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-koki-500 text-ink-1000 mb-5">
-            <Rocket className="h-5 w-5" />
-          </div>
-          <h2 className="text-display text-display-md">
-            No launches yet. <span className="stamp">Be the first.</span>
-          </h2>
-          <p className="mt-6 text-ink-300/80 text-base leading-relaxed font-medium max-w-xl mx-auto">
-            Every token the HAMR agent ships lands here in real time —
-            with live pool price, graduation progress, and Blockscout links.
-            Run Auto-pilot or bring your own idea to seed the board.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link href="/launch" className="btn btn-primary !py-3 !px-5">
-              Ship a new launch
-            </Link>
-            <a
-              href="https://robinhoodchain.blockscout.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-secondary !py-3 !px-5"
-            >
-              Robinhood Blockscout
-            </a>
-          </div>
+      <div className="card !p-10 text-center">
+        <div className="text-[20px] font-black tracking-tight">
+          No public launches yet
         </div>
-      </section>
+        <p className="text-[13px] text-ink-300/70 mt-2 max-w-md mx-auto font-medium">
+          {error
+            ? "Couldn't load the public launch board right now. Try refreshing."
+            : "Be the first to ship a memecoin through KOKi. Every shipped token shows up here for everyone to see."}
+        </p>
+        <Link
+          href="/launch"
+          className="btn btn-primary !py-2.5 !px-4 !text-sm mt-6 inline-flex"
+        >
+          Launch a memecoin
+        </Link>
+      </div>
     );
   }
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-12">
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-        {items.map((l, i) => (
-          <LaunchCard key={l.token_address} launch={l} idx={i} />
-        ))}
-      </div>
-    </section>
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {items.map((l, i) => (
+        <PublicLaunchCard key={l.mint_pubkey} launch={l} idx={i} />
+      ))}
+    </div>
   );
 }
 
-function LaunchCard({ launch, idx }: { launch: PublicLaunch; idx: number }) {
+function PublicLaunchCard({
+  launch,
+  idx,
+}: {
+  launch: PublicLaunch;
+  idx: number;
+}) {
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const stats = usePumpCoin(launch.mint_pubkey);
+
+  useEffect(() => {
+    if (!launch.metadata_uri) return;
+    const cacheKey = `koki:img:${launch.mint_pubkey}`;
+    try {
+      const cached = window.localStorage.getItem(cacheKey);
+      if (cached) {
+        setImgUrl(cached);
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    let cancelled = false;
+    fetch(launch.metadata_uri, { cache: "force-cache" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((meta) => {
+        if (cancelled) return;
+        const url = meta && typeof meta.image === "string" ? meta.image : null;
+        if (url) {
+          setImgUrl(url);
+          try {
+            window.localStorage.setItem(cacheKey, url);
+          } catch {
+            /* quota, ignore */
+          }
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [launch.metadata_uri, launch.mint_pubkey]);
+
+  const monitorHref = `/launches/${launch.mint_pubkey}`;
+  const creator = `${launch.wallet_pubkey.slice(0, 4)}…${launch.wallet_pubkey.slice(-4)}`;
+
   return (
     <Link
-      href={`/launches/${launch.token_address}`}
+      href={monitorHref}
       className="card card-hover group flex flex-col overflow-hidden !p-0 launch-card-anim"
       style={{ animationDelay: `${Math.min(idx, 12) * 60}ms` }}
     >
       <div className="aspect-square w-full bg-koki-500 overflow-hidden relative border-b border-[var(--border-strong)]">
-        {launch.logo_url ? (
-          <Image
-            src={launch.logo_url}
+        {imgUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imgUrl}
             alt={launch.token_name}
-            fill
-            sizes="200px"
-            unoptimized
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -136,28 +167,101 @@ function LaunchCard({ launch, idx }: { launch: PublicLaunch; idx: number }) {
           </span>
         </div>
         <div className="text-[10px] text-ink-300/55 font-mono truncate">
-          {launch.token_address.slice(0, 6)}…{launch.token_address.slice(-4)}
+          {launch.mint_pubkey.slice(0, 5)}…{launch.mint_pubkey.slice(-5)}
         </div>
+
+        {/* Live market cap from Pump.fun. Always show the row so the user
+            can see when the data hasn't arrived yet. */}
+        <div className="flex items-baseline justify-between gap-2 pt-1">
+          <span className="text-[10px] font-bold text-ink-300/55 uppercase tracking-wider">
+            Mcap
+          </span>
+          <span className="text-[13px] font-black tabular-nums tracking-tight">
+            {stats ? formatMcUsd(stats.marketCapUsd) : "-"}
+          </span>
+        </div>
+        {stats && stats.bondingProgress !== null && (
+          <BondingBar progress={stats.bondingProgress} complete={stats.complete} />
+        )}
+
         <div className="flex items-center justify-between gap-2 mt-auto pt-2">
+          <Badge
+            tone={stats?.complete ? "live" : "neutral"}
+            className="!h-[18px] !text-[9px] !px-2"
+          >
+            {stats?.complete ? "Graduated" : "Launched"}
+          </Badge>
           <span className="text-[10px] text-ink-300/55 font-bold">
             {new Date(launch.created_at).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
             })}
           </span>
-          {launch.pons_url && (
+        </div>
+        <div className="flex items-center justify-between pt-1">
+          <span
+            className="text-[10px] text-ink-300/55 font-mono"
+            title={`Launched by wallet ${launch.wallet_pubkey}`}
+          >
+            by {creator}
+          </span>
+          {launch.pump_url && (
             <a
-              href={launch.pons_url}
+              href={launch.pump_url}
               target="_blank"
-              rel="noopener noreferrer"
+              rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
               className="inline-flex items-center gap-1 text-[10px] font-extrabold text-ink-300/72 hover:text-ink-300 hover:underline"
             >
-              View <ArrowUpRight className="h-2.5 w-2.5" />
+              Pump <ExternalLink className="h-2.5 w-2.5" />
             </a>
           )}
         </div>
       </div>
     </Link>
+  );
+}
+
+function BondingBar({
+  progress,
+  complete,
+}: {
+  progress: number;
+  complete: boolean;
+}) {
+  const pct = Math.max(0, Math.min(1, progress)) * 100;
+  return (
+    <div className="space-y-1 pt-1">
+      <div className="flex items-baseline justify-between text-[9px] font-bold text-ink-300/55 uppercase tracking-wider">
+        <span>Bonding</span>
+        <span className="tabular-nums">{pct.toFixed(0)}%</span>
+      </div>
+      <div className="h-[5px] w-full rounded-full bg-ink-1000/40 overflow-hidden">
+        <div
+          className="h-full relative bg-koki-500 transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        >
+          {!complete && (
+            <span className="absolute inset-0 bonding-shimmer pointer-events-none" />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {Array.from({ length: 8 }).map((_, i) => (
+        <div key={i} className="card !p-0 overflow-hidden animate-pulse">
+          <div className="aspect-square w-full bg-koki-500/40 border-b border-[var(--border-strong)]" />
+          <div className="p-3.5 space-y-2">
+            <div className="h-3.5 bg-ink-1000/10 rounded w-3/4" />
+            <div className="h-2.5 bg-ink-1000/10 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -13,13 +13,12 @@ export default function AttentionLayerSection() {
           <h2 className="mt-3 text-display text-display-md text-balance">
             Most launch tools wait for an idea.
             <br />
-            <span className="opacity-60">HAMR watches first.</span>
+            <span className="opacity-60">KOKi watches first.</span>
           </h2>
           <p className="mt-6 text-ink-300/80 text-base md:text-lg leading-relaxed max-w-2xl text-balance font-medium">
-            HAMR reads X meme signals, community momentum, and onchain
-            relevance before drafting a launch kit and preparing the
-            execution on Robinhood Chain. You start at the top of the funnel,
-            not a blank form.
+            KOKi reads X meme signals, community momentum, and onchain
+            relevance before drafting a launch kit and preparing Pump.fun
+            execution. You start at the top of the funnel, not a blank form.
           </p>
 
           <div className="mt-10 flex flex-wrap items-center gap-4">
@@ -28,7 +27,7 @@ export default function AttentionLayerSection() {
               <ArrowRight className="h-4 w-4" />
             </Link>
             <span className="text-[12px] font-bold text-ink-300/72">
-              Live X search via the x_search tool.
+              Live X search via Grok’s x_search tool.
             </span>
           </div>
         </div>

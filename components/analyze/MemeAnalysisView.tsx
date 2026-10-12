@@ -118,9 +118,9 @@ export default function MemeAnalysisView({ memeId }: { memeId: string }) {
               <span className="text-ink-300/65 font-mono">${meme.ticker}</span>
               <Badge tone={tone}>Launch readiness: {a.launchReadiness}</Badge>
               {data.provider === "xai" ? (
-                <Badge tone="live">Live AI</Badge>
+                <Badge tone="live">Grok, {data.model}</Badge>
               ) : data.provider === "mock" ? (
-                <Badge tone="mock">Stub, set XAI_API_KEY for live AI</Badge>
+                <Badge tone="mock">Stub, set XAI_API_KEY for Grok</Badge>
               ) : data.provider ? (
                 <Badge tone="info">{data.provider}, {data.model}</Badge>
               ) : null}

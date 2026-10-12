@@ -1,6 +1,6 @@
 # Security Policy
 
-HAMR.fun handles wallet flows and on-chain actions, so security reports are taken seriously and triaged fast.
+KOKi.ai handles wallet flows and on-chain actions, so security reports are taken seriously and triaged fast.
 
 ## Core principles enforced in code
 

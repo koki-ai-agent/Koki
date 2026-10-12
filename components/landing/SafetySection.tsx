@@ -4,7 +4,7 @@ const PILLARS = [
   {
     icon: Cpu,
     title: "Agent prepares",
-    body: "The agent drafts the launch kit, onchain metadata, and the unsigned transaction.",
+    body: "Grok drafts the launch kit, onchain metadata, and the unsigned transaction.",
   },
   {
     icon: UserCheck,
@@ -14,12 +14,12 @@ const PILLARS = [
   {
     icon: Wallet,
     title: "Wallet signs",
-    body: "MetaMask, Rainbow, or Robinhood Wallet signs the create-token transaction. We never see your keys.",
+    body: "Phantom or Solflare signs the create-token transaction. We never see your keys.",
   },
   {
     icon: ShieldCheck,
     title: "Launch executes",
-    body: "Only after your signature does the token go live on Robinhood Chain mainnet.",
+    body: "Only after your signature does the token go live on Solana mainnet.",
   },
 ];
 
@@ -34,7 +34,7 @@ export default function SafetySection() {
           </h2>
           <p className="mt-5 text-ink-300/80 text-base md:text-lg leading-relaxed font-medium text-balance">
             Memecoin launches go wrong when an agent silently controls funds.
-            HAMR is built so that never happens. The agent is powerful because
+            KOKi is built so that never happens. The agent is powerful because
             it prepares, not because it holds keys.
           </p>
         </div>
@@ -65,9 +65,9 @@ export default function SafetySection() {
 
         <div className="mt-10 surface-ink p-6 text-[14px] leading-relaxed font-medium">
           <span className="font-extrabold">Hard rules:</span>{" "}
-          HAMR does not store private keys. Does not ask for seed phrases.
+          KOKi does not store private keys. Does not ask for seed phrases.
           Does not move funds without your explicit signature. Does not claim
-          partnership with xAI, X, Robinhood, or Uniswap.
+          partnership with xAI, X, Grok, Pump.fun, PumpPortal, or Solana.
           Memecoin launches involve risk; you are the final decision maker.
         </div>
       </div>

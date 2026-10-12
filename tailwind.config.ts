@@ -10,7 +10,6 @@ const config: Config = {
     extend: {
       fontFamily: {
         sans: [
-          "PP Neue Montreal",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
@@ -21,7 +20,6 @@ const config: Config = {
           "sans-serif",
         ],
         display: [
-          "PP Neue Montreal",
           "Inter",
           "-apple-system",
           "SF Pro Display",
@@ -41,12 +39,12 @@ const config: Config = {
         "extra-tight": "-0.025em",
       },
       colors: {
-        // ── Semantic tokens ─────────────────────────────────────────────
-        // Mirror the CSS variables in globals.css so Tailwind classes stay
-        // in sync with hover/focus rules defined there. Prefer these for
-        // new code; the legacy palettes below are kept so class names
-        // like `bg-cream-50`, `text-ink-1000`, `bg-koki-500` still compile
-        // — they resolve to the monochrome light-theme equivalents.
+        // ── Semantic tokens (preferred for new code) ────────────────────
+        // These mirror the CSS variables in globals.css so Tailwind classes
+        // stay in sync with hover/focus rules defined there. Reach for
+        // these first; the legacy palettes below are kept so existing
+        // class names (bg-cream-50, text-ink-1000, etc.) compile cleanly
+        // and re-resolve to dark-mode equivalents.
         bg: "var(--bg)",
         "bg-elevated": "var(--bg-elevated)",
         surface: "var(--surface)",
@@ -59,69 +57,70 @@ const config: Config = {
         up: "var(--up)",
         down: "var(--down)",
 
-        // ── Ink palette — remapped to monochrome light theme. ───────────
-        // `ink-1000` used to be the deepest dark (page bg during the dark
-        // era). We now map it back to near-black text so `text-ink-1000`
-        // legibly appears on the new white canvas. `ink-300` (was primary
-        // text on dark bg) now resolves to a dark near-black so the
-        // migrated components stay readable.
+        // ── Ink palette — REMAPPED to Binance-dark surface scale. ───────
+        // Previously these were dark hex values used for both surfaces
+        // AND text on light backgrounds. Now the project is dark-themed,
+        // so:
+        //   - `bg-ink-1000` (was "deepest dark") still resolves to the
+        //     deepest tone — our page bg — so it keeps working.
+        //   - `text-ink-1000` (was "primary text on light bg") would now
+        //     be near-invisible. Components should migrate to `text-text`
+        //     or `text-ink-50` instead. We map the high end of the scale
+        //     to the page bg and the LOW end to light text colors, so any
+        //     remaining `text-ink-100`-ish usage still produces readable
+        //     light text by accident in most cases.
         ink: {
-          // Dark-theme mapping. ink-1000 doubles as "text on accent" and
-          // the base for translucent fills (bg-ink-1000/10 = white 10%),
-          // so it is near-white. ink-300 is primary body text.
-          1000: "#F4F4F8", // text primary / on-accent (near-white)
-          950:  "#EDEDF3",
-          900:  "#D5D5E0",
-          800:  "#B9B9C8",
-          700:  "#9C9CAE",
-          600:  "#84849A",
-          500:  "#6E6E80", // text muted
-          400:  "#8B8B9E", // text subtle
-          300:  "#EDEDF3", // primary text on dark bg
-          200:  "#1B1B26",
-          100:  "#16161F", // hover surface
-          50:   "#0A0A0F", // page bg
+          1000: "#0B0E11", // page bg
+          950: "#181A20",
+          900: "#1E2329", // card surface
+          800: "#252A31",
+          700: "#2B3139",
+          600: "#454B54",
+          500: "#848E9C", // text subtle
+          400: "#B7BDC6", // text muted
+          300: "#EAECEF", // primary text — new
+          200: "#F0F3F5",
+          100: "#F5F7FA",
+          50:  "#FAFCFE",
         },
-        // ── HAMR accent — REMAPPED from orange to graphite. Any component
-        //    that reads `bg-koki-500` now paints charcoal instead of
-        //    orange; the semantic slot ("brand accent") stays intact.
+        // ── KOKi orange — unchanged. The single warm accent on dark. ────
         koki: {
-          50:  "#F5F3FF",
-          100: "#EDE9FE",
-          200: "#DDD6FE",
-          300: "#C4B5FD",
-          400: "#A78BFA",
-          500: "#8B5CF6", // primary accent (violet)
-          600: "#7C3AED",
-          700: "#6D28D9",
-          800: "#5B21B6",
-          900: "#4C1D95",
+          50: "#FFF4ED",
+          100: "#FFE0CB",
+          200: "#FFC195",
+          300: "#FF9D5C",
+          400: "#FF7A2E",
+          500: "#E55B14",   // logo color
+          600: "#BF4710",
+          700: "#97380E",
+          800: "#6F2A0B",
+          900: "#4A1C07",
         },
-
-        // ── Legacy alias for any lingering `claw-*` classes. Same scale
-        //    as `koki` above so both render as charcoal grays.
+        // ── Legacy alias so any lingering "claw-*" classes still render
+        // (mirrors KOKi orange). Prefer `koki-*` going forward.
         claw: {
-          50:  "#F5F3FF",
-          100: "#EDE9FE",
-          200: "#DDD6FE",
-          300: "#C4B5FD",
-          400: "#A78BFA",
-          500: "#8B5CF6", // primary accent (violet)
-          600: "#7C3AED",
-          700: "#6D28D9",
-          800: "#5B21B6",
-          900: "#4C1D95",
+          50: "#FFF4ED",
+          100: "#FFE0CB",
+          200: "#FFC195",
+          300: "#FF9D5C",
+          400: "#FF7A2E",
+          500: "#E55B14",
+          600: "#BF4710",
+          700: "#97380E",
+          800: "#6F2A0B",
+          900: "#4A1C07",
         },
-
-        // ── Cream — REMAPPED to white / light-gray surfaces. Anywhere
-        //    components used `bg-cream-50` for "card surface" now correctly
-        //    gets pure white on the new light theme.
+        // ── Cream — REMAPPED to dark surfaces. Anywhere components used
+        //    `bg-cream-50` for "card surface" now correctly gets the dark
+        //    card surface. Anywhere `text-cream-50` was used (text on
+        //    inverted ink panels) now produces text-near-white on a dark
+        //    accent panel — still legible.
         cream: {
-          50:  "#14141C",  // primary card surface (dark panel)
-          100: "#1B1B26",  // hover / nested panel
-          200: "#22222E",  // lighter dark variant
+          50: "#1E2329",   // primary card surface (was light cream)
+          100: "#2B3139",  // hover / nested panel
+          200: "#3A4049",  // warmer dark variant
         },
-        // ── Cool blue — kept intact for occasional data/info accents. ──
+        // ── Cool blue for data/info accents — unchanged. ────────────────
         sea: {
           400: "#5BA9FF",
           500: "#3B8FFA",
@@ -130,23 +129,23 @@ const config: Config = {
       },
       boxShadow: {
         "elev-1":
-          "0 1px 0 rgba(255,255,255,0.03) inset, 0 1px 2px rgba(0,0,0,0.5)",
+          "0 1px 0 rgba(255,255,255,0.04) inset, 0 1px 2px rgba(0,0,0,0.4)",
         "elev-2":
-          "0 1px 0 rgba(255,255,255,0.04) inset, 0 10px 28px -10px rgba(0,0,0,0.6)",
+          "0 1px 0 rgba(255,255,255,0.05) inset, 0 8px 24px -10px rgba(0,0,0,0.5)",
         "elev-3":
-          "0 1px 0 rgba(255,255,255,0.05) inset, 0 28px 56px -16px rgba(0,0,0,0.7)",
+          "0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 48px -16px rgba(0,0,0,0.6)",
         glow:
-          "0 8px 30px -8px rgba(139,92,246,0.45)",
+          "0 8px 30px -8px rgba(229,91,20,0.45)",
         "glow-sea":
           "0 8px 30px -8px rgba(59,143,250,0.35)",
       },
       backgroundImage: {
         "radial-soft":
-          "radial-gradient(60% 50% at 50% 0%, rgba(139,92,246,0.12) 0%, rgba(10,10,15,0) 70%)",
+          "radial-gradient(60% 50% at 50% 0%, rgba(229,91,20,0.14) 0%, rgba(7,10,18,0) 70%)",
         "radial-cool":
-          "radial-gradient(60% 60% at 90% 10%, rgba(59,143,250,0.08) 0%, rgba(10,10,15,0) 60%)",
+          "radial-gradient(60% 60% at 90% 10%, rgba(59,143,250,0.07) 0%, rgba(7,10,18,0) 60%)",
         "border-fade":
-          "linear-gradient(180deg, rgba(244,244,248,0.08), rgba(244,244,248,0.02))",
+          "linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))",
       },
       keyframes: {
         "fade-in-up": {

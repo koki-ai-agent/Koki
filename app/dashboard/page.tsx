@@ -3,22 +3,17 @@ import { Rocket } from "lucide-react";
 import PageHeader from "@/components/shell/PageHeader";
 import CommandCenter from "@/components/dashboard/CommandCenter";
 
-// "My Launches" — wallet-scoped gallery of every token this user has
-// shipped via the HAMR agent. Mirrors the public /launches view, filtered
-// to the connected wallet.
-//
-// wagmi + WalletConnect touch indexedDB during hydration, which throws
-// during Next.js prerender. Skip static generation so the wallet stack
-// only ever runs in the browser.
-export const dynamic = "force-dynamic";
-
+// "My Launches", wallet-scoped Pump.fun-style gallery of every memecoin
+// THIS user has shipped via the KOKi agent. Mirrors the public /launches
+// view, but filtered to the connected wallet's own history. Stats card
+// strip stays at the top for at-a-glance context.
 export default function DashboardPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Your HAMR agent"
+        eyebrow="Your KOKi agent"
         title="My Launches"
-        description="Every memecoin you've shipped through the HAMR agent. Real launches on Robinhood Chain mainnet, and quick links to each live token page."
+        description="Every memecoin you've shipped through the KOKi agent. Real launches on Solana mainnet, the meme art that went onchain, and quick links to the live monitor on Pump.fun."
         actions={
           <Link
             href="/launch"

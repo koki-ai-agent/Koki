@@ -1,20 +1,35 @@
+import PageHeader from "@/components/shell/PageHeader";
 import LaunchMonitorPage from "@/components/launches/LaunchMonitorPage";
+import { PhaseProgress } from "@/components/ui/PhaseProgress";
 
-// Monitor page polls the HAMR launchpad via viem — must render in the browser
-// only, otherwise wagmi's WalletConnect init crashes prerender on indexedDB.
-export const dynamic = "force-dynamic";
-
-// /launches/[mint] — the token page. Pump.fun style: no marketing header,
-// no agent-phase strip. The token IS the page: identity, chart, curve,
-// trade box.
-//
-// The dynamic segment name is still `mint` for backward compatibility
-// with radar / share links from the Solana era. Values are now EVM
-// token addresses (0x...).
+// /launches/[mint], Phase 05 (Monitor) of the agent loop.
 export default function LaunchByMintPage({
   params,
 }: {
   params: { mint: string };
 }) {
-  return <LaunchMonitorPage token={params.mint} />;
+  const mint = params.mint;
+  return (
+    <>
+      <PageHeader
+        eyebrow="Monitor, Phase 05"
+        title="Post-launch monitor"
+        description="Live onchain monitoring + Grok-recommended next actions. Supply, top holders, creator wallet activity, and ready-to-post content all in one view."
+        breadcrumbs={[
+          { href: "/", label: "KOKi" },
+          { href: "/launches", label: "Launches" },
+          { label: shortMint(mint) },
+        ]}
+      />
+      <div className="mx-auto max-w-7xl px-6 pt-8">
+        <PhaseProgress current="monitor" />
+      </div>
+      <LaunchMonitorPage mint={mint} />
+    </>
+  );
+}
+
+function shortMint(s: string): string {
+  if (s.length <= 14) return s;
+  return `${s.slice(0, 6)}…${s.slice(-6)}`;
 }

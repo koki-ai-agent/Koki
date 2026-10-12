@@ -5,7 +5,7 @@ import { callOpenAI } from "./openai";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 // ─────────────────────────────────────────────────────────────────────────
-// HAMR LLM router
+// KOKi LLM router
 //
 // Provider order is FIXED for product positioning reasons:
 //   1. xAI Grok (primary)         — what "Grok-first" means in practice
@@ -134,7 +134,7 @@ function logUsage(row: {
   void sb
     .from("llm_usage")
     .insert({
-      wallet_address: row.walletPubkey ?? null,
+      wallet_pubkey: row.walletPubkey ?? null,
       provider: row.provider,
       model: row.model,
       feature: row.feature,

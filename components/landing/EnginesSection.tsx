@@ -57,11 +57,11 @@ const ENGINES: Engine[] = [
   {
     num: "04",
     name: "Execution",
-    insight: "Three engines into one signature. Launched in a single shot.",
+    insight: "Three engines into one signature. Pump.fun in a single shot.",
     capabilities: [
       "Token concept, ticker",
-      "Onchain metadata",
-      "Direct onchain launch",
+      "Pump.fun metadata (IPFS)",
+      "Direct Pump.fun launch",
       "Live launch status",
     ],
     icon: Rocket,
@@ -81,7 +81,7 @@ export default function EnginesSection() {
           </h2>
           <p className="mt-5 text-ink-300/80 text-base md:text-lg leading-relaxed font-medium max-w-2xl">
             Memecoins are born on X. Communities move on X. Alpha flows from
-            onchain to X. HAMR is the first to wire all four into a single
+            onchain to X. KOKi is the first to wire all four into a single
             autonomous launch agent.
           </p>
         </div>

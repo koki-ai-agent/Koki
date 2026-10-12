@@ -1,4 +1,4 @@
-// Shared TypeScript types for HAMR.
+// Shared TypeScript types for KOKi.
 
 export type Chain = "solana" | "base" | "ethereum";
 

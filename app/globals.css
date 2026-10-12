@@ -2,50 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── HAMR.fun brand tokens ──────────────────────────────────────────────────
-   Dark violet theme. Near-black canvas with a hint of purple, violet
-   accent for CTAs / progress / highlights — pump.fun / Pons energy.
-   Every "--orange" name is preserved so the ~60 sites that read
-   var(--orange) don't need touching: it now resolves to violet.          */
+/* ── KOKi.ai brand tokens ──────────────────────────────────────────────────
+   Binance-dark canvas, KOKi orange accent. Trading-desk vibe with
+   memecoin energy.                                                        */
 :root {
   color-scheme: dark;
 
-  /* Accent — violet. Reserved for CTAs, the .stamp highlight, progress
-     fills, and key numbers. */
-  --orange: #8B5CF6;
-  --orange-deep: #7C3AED;
-  --orange-soft: #A78BFA;
+  /* Brand orange — kept from the previous KOKi palette as the sole
+     warm accent. Reserve it for CTAs, key numbers, and the logomark. */
+  --orange: #E55B14;
+  --orange-deep: #BF4710;
+  --orange-soft: #FF7A2E;
 
-  /* Canvas + panels — near-black with a violet undertone. */
-  --bg: #0A0A0F;
-  --bg-elevated: #0F0F16;   /* navbar, footer, subtle top strip */
-  --surface: #14141C;       /* card / panel */
-  --surface-2: #1B1B26;     /* hover / nested panel */
+  /* Binance-style dark canvas + panels. */
+  --bg: #0B0E11;            /* deep navy, almost-black page bg */
+  --bg-elevated: #181A20;   /* one notch above bg — used for navbar/footer */
+  --surface: #1E2329;       /* card / panel surface */
+  --surface-2: #2B3139;     /* hover / nested panels */
 
-  /* Text — near-white primary, softer grays for secondary copy. */
-  --text: #F4F4F8;
-  --text-muted: #A6A6B6;
-  --text-subtle: #6E6E80;
+  /* Text */
+  --text: #EAECEF;          /* primary near-white */
+  --text-muted: #B7BDC6;    /* secondary mid-gray */
+  --text-subtle: #848E9C;   /* tertiary low-emphasis */
 
-  /* Borders — thin light hairlines on the dark surface. */
-  --border: rgba(244, 244, 248, 0.08);
-  --border-strong: rgba(244, 244, 248, 0.18);
+  /* Borders — light on dark */
+  --border: rgba(234, 236, 239, 0.10);
+  --border-strong: rgba(234, 236, 239, 0.28);
 
-  /* Up / down — brighter for dark canvas. */
-  --up: #34D399;
-  --down: #F87171;
+  /* Up / down — Binance-style green/red for prices */
+  --up: #0ECB81;
+  --down: #F6465D;
 
-  /* Legacy aliases so old class names still compile. */
-  --ink: var(--text);
-  --ink-soft: var(--text-muted);
+  /* Legacy aliases kept so old class names compile cleanly. ink/cream
+     map onto their dark-mode equivalents — anything that previously
+     used var(--ink) for a "dark surface" now correctly gets the dark
+     surface; anything that used var(--cream) for "light surface" now
+     gets our actual card surface. */
+  --ink: var(--bg);
+  --ink-soft: var(--bg-elevated);
   --cream: var(--surface);
   --cream-2: var(--surface-2);
 
-  /* Accent — violet CTA on dark. */
+  /* Accent — orange solid on dark. */
   --accent: var(--orange);
-  --accent-on: #FFFFFF;
-  /* Soft violet glows for hero / card accents. */
-  --glow: rgba(139, 92, 246, 0.16);
+  --accent-on: #0B0E11;     /* dark text on the orange button */
 }
 
 html,
@@ -63,19 +63,20 @@ body {
 
 ::selection {
   background: var(--orange);
-  color: #FFFFFF;
+  color: #0B0E11;
 }
 
-/* ── Atmospheric background (very subtle) ─────────────────────────────── */
+/* ── Atmospheric glow watermarks (low alpha, decorative) ───────────────── */
 .bg-app {
   background:
-    radial-gradient(90% 48% at 50% 0%, rgba(139, 92, 246, 0.10) 0%, rgba(10, 10, 15, 0) 62%),
+    radial-gradient(60% 40% at 80% 0%, rgba(229, 91, 20, 0.10) 0%, rgba(229, 91, 20, 0) 70%),
+    radial-gradient(50% 35% at 10% 100%, rgba(229, 91, 20, 0.06) 0%, rgba(229, 91, 20, 0) 70%),
     var(--bg);
 }
 
 /* ── Typography ────────────────────────────────────────────────────────── */
 .text-display {
-  font-family: 'PP Neue Montreal', 'Inter', -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
+  font-family: 'Inter', -apple-system, "SF Pro Display", "Helvetica Neue", sans-serif;
   font-weight: 900;
   letter-spacing: -0.045em;
   font-feature-settings: "ss01", "cv11";
@@ -90,7 +91,7 @@ body {
 .text-balance { text-wrap: balance; }
 
 .eyebrow {
-  font-family: 'PP Neue Montreal', 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
   font-size: 11px;
   letter-spacing: 0.16em;
@@ -98,17 +99,17 @@ body {
   color: var(--text-muted);
 }
 
-/* ── Stamp — violet inline highlight ───────────────────────────────────── */
+/* ── Stamp — orange inline highlight ───────────────────────────────────── */
 .stamp {
   display: inline-block;
   background: var(--orange);
-  color: #FFFFFF;
+  color: #0B0E11;
   padding: 0 0.18em;
   border-radius: 6px;
   transform: rotate(-2deg);
 }
 
-/* ── Cards — dark panel with hairline border ───────────────────────────── */
+/* ── Cards — dark panel with subtle border ─────────────────────────────── */
 .surface {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -124,7 +125,7 @@ body {
 .card-hover:hover {
   transform: translateY(-2px);
   border-color: var(--border-strong);
-  box-shadow: 0 10px 28px -8px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(139, 92, 246, 0.12);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.6);
 }
 .card-emph {
   background: var(--surface-2);
@@ -132,15 +133,15 @@ body {
   border-color: var(--orange);
 }
 
-/* ── Inverted surface — charcoal panel with light text ─────────────────── */
+/* ── Inverted surface — orange accent panel ────────────────────────────── */
 .surface-ink {
   background: var(--orange);
-  color: #FFFFFF;
+  color: #0B0E11;
   border: 1px solid var(--orange);
   border-radius: 14px;
 }
 
-/* ── Hairline divider ──────────────────────────────────────────────────── */
+/* ── Hairline divider — light hairline on dark ─────────────────────────── */
 .hairline {
   height: 1px;
   background: var(--border);
@@ -164,19 +165,19 @@ body {
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-/* Primary — violet solid CTA. */
+/* Primary — orange solid (the accent CTA color). */
 .btn-primary {
   background: var(--orange);
-  color: #FFFFFF;
+  color: #0B0E11;
   border-color: var(--orange);
 }
 .btn-primary:hover {
-  background: var(--orange-deep);
-  border-color: var(--orange-deep);
-  box-shadow: 0 6px 26px -6px rgba(139, 92, 246, 0.55);
+  background: var(--orange-soft);
+  border-color: var(--orange-soft);
+  box-shadow: 0 6px 22px -6px rgba(229, 91, 20, 0.55);
 }
 
-/* Secondary — dark surface with hairline border. */
+/* Secondary — dark panel surface with hairline border. */
 .btn-secondary {
   background: var(--surface);
   color: var(--text);
@@ -195,7 +196,7 @@ body {
   border-color: transparent;
 }
 .btn-ghost:hover {
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text);
 }
 
@@ -217,7 +218,7 @@ body {
 }
 .pill-emph {
   background: var(--orange);
-  color: #FFFFFF;
+  color: #0B0E11;
   border-color: var(--orange);
 }
 .pill-live::before {
@@ -229,7 +230,7 @@ body {
   display: inline-block;
 }
 
-/* ── Chip ──────────────────────────────────────────────────────────────── */
+/* ── Chip — small status indicator with mini emphasis ──────────────────── */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -244,28 +245,28 @@ body {
   letter-spacing: -0.01em;
 }
 .chip strong {
-  color: #FFFFFF;
+  color: #0B0E11;
   background: var(--orange);
   padding: 0 5px;
   border-radius: 3px;
   font-weight: 800;
 }
 
-/* ── Meme sticker — small rotated tag ──────────────────────────────────── */
+/* ── Meme sticker (slight rotation, hand-stuck feel) ───────────────────── */
 .meme-tag {
   display: inline-block;
-  background: var(--surface-2);
-  color: var(--text);
+  background: var(--surface);
+  color: var(--orange);
   font-weight: 800;
   font-size: 11px;
   padding: 4px 9px;
   border-radius: 4px;
   transform: rotate(3deg);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--orange);
   letter-spacing: 0.04em;
 }
 
-/* ── Price up / down ───────────────────────────────────────────────────── */
+/* ── Price up / down — Binance-style green/red indicators ──────────────── */
 .text-up { color: var(--up); }
 .text-down { color: var(--down); }
 
@@ -294,8 +295,7 @@ select:focus,
 textarea:focus {
   outline: none;
   border-color: var(--orange);
-  background: var(--surface);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+  background: var(--surface-2);
 }
 .input::placeholder,
 input::placeholder,
@@ -305,19 +305,19 @@ textarea::placeholder { color: var(--text-subtle); }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { scrollbar-width: none; }
 
-/* ── Focus ring — violet ───────────────────────────────────────────────── */
+/* ── Focus ring — orange ──────────────────────────────────────────────── */
 :where(button, a, input, select, textarea):focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 2px;
   border-radius: 8px;
 }
 
-/* ── Phase progress dots ───────────────────────────────────────────────── */
+/* ── Phase progress (5-step, orange stamp dots) ────────────────────────── */
 .phase-step {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: 'PP Neue Montreal', 'Inter', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-weight: 800;
   letter-spacing: -0.02em;
   font-size: 13px;
@@ -337,9 +337,9 @@ textarea::placeholder { color: var(--text-subtle); }
   font-weight: 800;
 }
 .phase-step.is-active { color: var(--text); }
-.phase-step.is-active .num { background: var(--orange); color: #FFFFFF; border-color: var(--orange); }
+.phase-step.is-active .num { background: var(--orange); color: #0B0E11; border-color: var(--orange); }
 .phase-step.is-done { color: var(--text); }
-.phase-step.is-done .num { background: var(--orange); color: #FFFFFF; border-color: var(--orange); }
+.phase-step.is-done .num { background: var(--orange); color: #0B0E11; border-color: var(--orange); }
 
 /* ── Animations ────────────────────────────────────────────────────────── */
 @keyframes fade-in-up {
@@ -348,6 +348,9 @@ textarea::placeholder { color: var(--text-subtle); }
 }
 .anim-up { animation: fade-in-up 600ms cubic-bezier(0.22, 1, 0.36, 1) both; }
 
+/* Pump.fun-style staggered card reveal — used in the launches gallery
+   and the dashboard token grid. Cards rise + fade in 60ms apart so the
+   list feels alive as the page loads. */
 @keyframes launch-card-rise {
   0%   { opacity: 0; transform: translateY(14px) scale(0.985); }
   100% { opacity: 1; transform: translateY(0)    scale(1); }
@@ -356,16 +359,23 @@ textarea::placeholder { color: var(--text-subtle); }
   animation: launch-card-rise 480ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Hover-lift on token cards. Using transform (GPU) keeps it smooth on
+   throwaway-spec laptops. The shadow is an ORANGE glow (matches the
+   brand accent) on top of the existing dark depth shadow, so cards
+   feel like they light up under the cursor. */
 .card-hover { transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease; }
 .card-hover:hover {
   transform: translateY(-3px);
-  border-color: rgba(139, 92, 246, 0.45);
+  border-color: rgba(229, 91, 20, 0.45);
   box-shadow:
-    0 16px 36px -14px rgba(0, 0, 0, 0.6),
-    0 0 0 1px rgba(139, 92, 246, 0.14);
+    0 14px 32px -10px rgba(0, 0, 0, 0.65),
+    0 0 24px -6px rgba(229, 91, 20, 0.35);
 }
 
-/* ── Bonding-curve shimmer ─────────────────────────────────────────────── */
+/* ── Bonding-curve shimmer ──────────────────────────────────────────────
+   The filled portion of the bonding progress bar gets a slow diagonal
+   highlight sliding across it, so the bar reads as "live, accumulating"
+   instead of a static fill. Pump.fun does this too. */
 @keyframes bonding-shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
@@ -375,7 +385,7 @@ textarea::placeholder { color: var(--text-subtle); }
     100deg,
     transparent 0%,
     transparent 40%,
-    rgba(255, 255, 255, 0.22) 50%,
+    rgba(255, 255, 255, 0.35) 50%,
     transparent 60%,
     transparent 100%
   );
@@ -384,7 +394,7 @@ textarea::placeholder { color: var(--text-subtle); }
   animation: bonding-shimmer 2.4s linear infinite;
 }
 
-/* ── Live dot pulse ────────────────────────────────────────────────────── */
+/* ── Live dot pulse — small green/orange status dot that breathes ──── */
 @keyframes pulse-dot {
   0%, 100% { transform: scale(1);   opacity: 1;   }
   50%      { transform: scale(1.4); opacity: 0.55;}
@@ -394,6 +404,9 @@ textarea::placeholder { color: var(--text-subtle); }
 @media (prefers-reduced-motion: reduce) {
   .bonding-shimmer { animation: none; background-image: none; }
   .dot-pulse { animation: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
   .launch-card-anim { animation: none; }
   .card-hover:hover { transform: none; box-shadow: none; }
 }

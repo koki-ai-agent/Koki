@@ -9,7 +9,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 // Per-call live x_search. Every Auto-pilot invocation asks Grok to do its
 // OWN fresh X search and pick a viral post that hasn't been used by any
-// previous HAMR launch, strict deduplication across all wallets.
+// previous KOKi launch, strict deduplication across all wallets.
 //
 // Why per-call (and not a shared cache): 1000 concurrent users splitting a
 // 14-meme pool means most users get duplicates. With per-call search +
@@ -22,7 +22,7 @@ export const maxDuration = 180;
 export const runtime = "nodejs";
 
 /** How many recent launches to look back when building the exclude list.
- *  100 = roughly the last ~3-7 days of HAMR launches at expected volume.
+ *  100 = roughly the last ~3-7 days of KOKi launches at expected volume.
  *  Tradeoff: bigger = stricter dedup, larger prompt. Grok-4 handles 100+
  *  URLs in a system message without trouble. */
 const RECENT_LAUNCHES_FOR_EXCLUDE = 200;
@@ -117,109 +117,66 @@ export async function POST(req: NextRequest) {
     const oneDayAgo = new Date(today.getTime() - 1 * 24 * 60 * 60 * 1000);
     const isoDate = (d: Date) => d.toISOString().slice(0, 10);
 
-    const makeConceptCall = (exclude: string[]) =>
-      callLLM({
-        messages: buildAutoConceptMessages({ excludeXUrls: exclude }),
-        responseFormat: "json",
-        // 1500 (was 800) to give Grok room to emit the full JSON shape after
-        // walking 30-50 candidates through the priority order. Truncated JSON
-        // = parseAutoConcept throws = mock fallback. Reproduced once in prod.
-        maxTokens: 1500,
-        temperature: 0.95, // higher = more variety so we don't keep getting the same idea
-        model: searchModel,
-        feature: "auto-launch",
-        walletPubkey,
-        // ALWAYS attach Live Search, the whole point of Auto-pilot is that
-        // Grok scans X in real time and the picked post is genuinely fresh.
-        // We keep the env override for emergencies (xAI outage), but the
-        // default is now ON.
-        ...(wantLiveSearch || true
-          ? {
-              liveSearch: {
-                fromDate: isoDate(oneDayAgo),
-                toDate: isoDate(today),
-                maxResults: 40, // bigger pool, most candidates will fail the 500K-view floor
-                enableImageUnderstanding: true,
-              },
-            }
-          : {}),
-      });
+    const llmRes = await callLLM({
+      messages: buildAutoConceptMessages({ excludeXUrls: excludeXUrls }),
+      responseFormat: "json",
+      // 1500 (was 800) to give Grok room to emit the full JSON shape after
+      // walking 30-50 candidates through the priority order. Truncated JSON
+      // = parseAutoConcept throws = mock fallback. Reproduced once in prod.
+      maxTokens: 1500,
+      temperature: 0.95, // higher = more variety so we don't keep getting the same idea
+      model: searchModel,
+      feature: "auto-launch",
+      walletPubkey,
+      // ALWAYS attach Live Search, the whole point of Auto-pilot is that
+      // Grok scans X in real time and the picked post is genuinely fresh.
+      // We keep the env override for emergencies (xAI outage), but the
+      // default is now ON.
+      ...(wantLiveSearch || true
+        ? {
+            liveSearch: {
+              fromDate: isoDate(oneDayAgo),
+              toDate: isoDate(today),
+              maxResults: 40, // bigger pool, most candidates will fail the 500K-view floor
+              enableImageUnderstanding: true,
+            },
+          }
+        : {}),
+    });
 
-    const parseOrLog = (content: string): AutoConceptResult => {
-      try {
-        return parseAutoConcept(content);
-      } catch (parseErr) {
-        // Surface the actual Grok output so we can see WHY parse failed
-        // (truncated? prose explanation? missing fields?). Without this log
-        // the 200-with-mock looked like a successful run from outside.
-        console.error(
-          `[auto-launch] parseAutoConcept failed: ${(parseErr as Error).message}\nraw Grok content (first 1500 chars):\n${(content || "").slice(0, 1500)}`,
-        );
-        throw parseErr;
-      }
-    };
-
-    // First attempt + ONE retry on failure. Truncated JSON and transient
-    // search hiccups were silently dumping users onto the deterministic
-    // mock concept — which looks like "the same coin again, no image, no
-    // link". One retry absorbs most of those. If BOTH fail, the outer
-    // catch still serves the mock as the last resort.
-    let llmRes: Awaited<ReturnType<typeof makeConceptCall>>;
     let concept: AutoConceptResult;
     try {
-      llmRes = await makeConceptCall(excludeXUrls);
-      concept = parseOrLog(llmRes.content);
-    } catch (firstErr) {
-      console.warn(
-        `[auto-launch] first attempt failed (${(firstErr as Error).message}) — retrying once`,
+      concept = parseAutoConcept(llmRes.content);
+    } catch (parseErr) {
+      // Surface the actual Grok output so we can see WHY parse failed
+      // (truncated? prose explanation? missing fields?). Without this log
+      // the 200-with-mock looked like a successful run from outside.
+      console.error(
+        `[auto-launch] parseAutoConcept failed: ${(parseErr as Error).message}\nraw Grok content (first 1500 chars):\n${(llmRes.content || "").slice(0, 1500)}`,
       );
-      llmRes = await makeConceptCall(excludeXUrls);
-      concept = parseOrLog(llmRes.content);
+      throw parseErr;
     }
 
-    // Hard dedup check — if Grok ignored the exclude list and re-picked a
-    // URL that's already taken (launched OR reserved), RETRY ONCE with the
-    // offending URL added to the exclude list. The old behavior (strip the
-    // attribution but keep the concept) meant users saw the SAME meme again
-    // — now with no image and no link, the worst of both worlds. A retry
-    // costs one more LLM round-trip but actually delivers a fresh post.
+    // Hard dedup check, if Grok ignored the exclude list and re-picked a
+    // URL that's already taken (launched OR reserved), refuse to anchor on
+    // it. Drop the X attribution; the wizard will use a safe ticker-search
+    // Pump.fun URL as the token's Twitter link instead. Better an
+    // unattributed launch than a duplicate.
     const excludeSet = new Set(excludeXUrls);
     if (concept.originXUrl && excludeSet.has(concept.originXUrl)) {
       console.warn(
-        `[auto-launch] Grok returned an excluded URL (${concept.originXUrl}) — retrying once with it force-excluded`,
+        `[auto-launch] Grok returned an excluded URL (${concept.originXUrl}), dropping attribution`,
       );
-      try {
-        const retryRes = await makeConceptCall([
-          ...excludeXUrls,
-          concept.originXUrl,
-        ]);
-        const retryConcept = parseOrLog(retryRes.content);
-        if (
-          retryConcept.originXUrl &&
-          !excludeSet.has(retryConcept.originXUrl) &&
-          retryConcept.originXUrl !== concept.originXUrl
-        ) {
-          llmRes = retryRes;
-          concept = retryConcept;
-        } else {
-          // Retry still collided (or came back unattributed) — fall back to
-          // the stripped-attribution behavior rather than a third call.
-          concept.originXUrl = undefined;
-          concept.originXAuthor = undefined;
-          concept.originImageUrl = undefined;
-        }
-      } catch {
-        concept.originXUrl = undefined;
-        concept.originXAuthor = undefined;
-        concept.originImageUrl = undefined;
-      }
+      concept.originXUrl = undefined;
+      concept.originXAuthor = undefined;
+      concept.originImageUrl = undefined;
     }
 
     // Reserve the URL IMMEDIATELY so the next concurrent caller (within
     // the next 30 minutes) won't see it as available. The reservation is
     // fire-and-forget, we don't await it before returning the response.
     // If the user completes their launch, /api/launches POST writes the
-    // URL into pons_launches (permanent). If they abandon, the 30-min TTL
+    // URL into launches_v1 (permanent). If they abandon, the 30-min TTL
     // sweeps it.
     if (concept.originXUrl) {
       void reserveXUrl(concept.originXUrl, walletPubkey);
@@ -239,11 +196,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Safety net: if the cited X post body looks like a token-shill (CA,
-    // contract, pons.family / pump.fun / uniswap link, dexscreener, EVM
-    // address, "$TICKER" mentions, "fair launch live"), the post probably
-    // already has its own coin and our token's Twitter button would point
-    // at that coin's promo, bad look. Drop the originXUrl in that case so
-    // the token falls back to the safe ticker-search URL on Pons.
+    // contract, pump.fun link, dexscreener, base58 mint address, "$TICKER"
+    // mentions, "fair launch live"), the post probably already has its own
+    // coin and our token's Twitter button would point at that coin's
+    // promo, bad look. Drop the originXUrl in that case so the token
+    // falls back to the safe ticker-search URL on Pump.fun.
     //
     // We only see what the model wrote in `idea` / `reasoning` though, not
     // the post body itself, so check those fields and the URL itself for
@@ -296,7 +253,7 @@ export async function POST(req: NextRequest) {
  * Pull X-post URLs that are off-limits for the next Auto-pilot pick. This is
  * the UNION of two tables:
  *
- *   1. pons_launches.source_x_url, posts that previous launches already
+ *   1. launches_v1.source_x_url, posts that previous launches already
  *      anchored on. PERMANENT exclusion (a token is a token).
  *
  *   2. reserved_x_urls (expires_at > now()), posts that another concurrent
@@ -316,7 +273,7 @@ async function fetchUnavailableXUrls(): Promise<string[]> {
   // Run the two queries in parallel, they don't depend on each other.
   const [launchedRes, reservedRes] = await Promise.all([
     sb
-      .from("pons_launches")
+      .from("launches_v1")
       .select("source_x_url")
       .not("source_x_url", "is", null)
       .order("created_at", { ascending: false })
@@ -365,7 +322,7 @@ async function fetchUnavailableXUrls(): Promise<string[]> {
  * Fire-and-forget: failure here doesn't break the user's launch flow,
  * it just means concurrent users might pick the same post. The
  * post-LLM excludeSet check on the next caller will still catch
- * duplicates once pons_launches has the row.
+ * duplicates once launches_v1 has the row.
  */
 async function reserveXUrl(xUrl: string, walletPubkey: string | undefined): Promise<void> {
   const sb = getSupabaseAdmin();
@@ -376,7 +333,7 @@ async function reserveXUrl(xUrl: string, walletPubkey: string | undefined): Prom
       .upsert(
         {
           x_url: xUrl,
-          wallet_address: walletPubkey ?? null,
+          wallet_pubkey: walletPubkey ?? null,
           reserved_at: new Date().toISOString(),
           expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         },
@@ -387,40 +344,16 @@ async function reserveXUrl(xUrl: string, walletPubkey: string | undefined): Prom
   }
 }
 
-/** Last-resort concepts when the LLM is unavailable. Rotated randomly so
- *  even total-outage fallbacks don't hand every user the identical coin. */
+/** Deterministic, X native concept used when LLM is unavailable. */
 function fallbackConcept(): AutoConceptResult {
-  const pool: AutoConceptResult[] = [
-    {
-      idea: "Meme cat that watches X timelines 24/7. The patron saint of the AI agent era.",
-      tokenName: "Timeline Cat",
-      ticker: "TLCAT",
-      theme: "Vigilant cat archetype, monochrome sketch energy, X native posting culture",
-      audience: "AI curious crypto natives, cat-meme posters, timeline lurkers",
-      launchStyle: "hype-raid",
-      reasoning:
-        "Cat memes are perennially X native; the always-watching overlay matches the agent era.",
-    },
-    {
-      idea: "The NPC who finally got a speaking role. One line, delivered badly, instantly iconic.",
-      tokenName: "SpeakingNPC",
-      ticker: "NPCUP",
-      theme: "Deadpan NPC face, speech-bubble motif, flat gray palette with one accent",
-      audience: "Shitposters, wojak-format enjoyers, gaming twitter",
-      launchStyle: "community-led",
-      reasoning:
-        "NPC formats resurface on X every cycle; giving the NPC a voice is a fresh twist on proven folklore.",
-    },
-    {
-      idea: "A frog that refuses to check the chart. Zen master of the timeline, unbothered since genesis.",
-      tokenName: "NoChartFrog",
-      ticker: "NOCHRT",
-      theme: "Meditating frog, soft greens, anti-hustle serenity as the joke",
-      audience: "Frog-meme lineage holders, burnout-humor accounts, degens in recovery",
-      launchStyle: "fair-launch",
-      reasoning:
-        "Frog memes are the most durable X archetype; the anti-chart angle inverts degen culture for the laugh.",
-    },
-  ];
-  return pool[Math.floor(Math.random() * pool.length)];
+  return {
+    idea: "Grok native meme cat that watches X timelines 24/7. The patron saint of the AI agent era.",
+    tokenName: "Grok Cat",
+    ticker: "GROKCAT",
+    theme: "AI cat archetype, neon-on-dark, X native posting energy",
+    audience: "AI curious crypto natives, Grok power users, cat-meme posters",
+    launchStyle: "hype-raid",
+    reasoning:
+      "Cat memes are perennially X native; the AI agent overlay matches the cultural moment without overclaiming.",
+  };
 }

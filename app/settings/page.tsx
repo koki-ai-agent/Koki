@@ -13,7 +13,7 @@ export default function SettingsPage() {
         title="Settings"
         description="Local profile fields. Persistence wires in once Supabase is connected."
         breadcrumbs={[
-          { href: "/", label: "HAMR" },
+          { href: "/", label: "KOKi" },
           { label: "Settings" },
         ]}
       />
@@ -29,10 +29,10 @@ export default function SettingsPage() {
               <Input type="email" placeholder="you@domain.com" />
             </Field>
             <Field label="X / Twitter handle">
-              <Input placeholder="hamr_builder" />
+              <Input placeholder="koki_builder" />
             </Field>
             <Field label="Telegram handle">
-              <Input placeholder="hamr_builder" />
+              <Input placeholder="koki_builder" />
             </Field>
           </div>
           <div className="pt-2">

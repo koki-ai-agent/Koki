@@ -1,90 +1,77 @@
 "use client";
 
-import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState } from "react";
-import { useAccount } from "wagmi";
-import { Rocket, ArrowUpRight } from "lucide-react";
-import { readLaunches, type SavedLaunch } from "@/lib/storage/launches";
+import Link from "next/link";
+import { Rocket, ExternalLink, ArrowUpRight, Trash2 } from "lucide-react";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { Badge } from "@/components/ui/Badge";
+import {
+  readLaunches,
+  clearLaunchesEverywhere,
+  type SavedLaunch,
+} from "@/lib/storage/launches";
+import { usePumpCoin, formatMcUsd } from "@/lib/hooks/usePumpCoin";
 
-// "My Launches" — the connected wallet's own launch history. Reads
-// server-side rows (pons_launches, wallet_address filter) when connected
-// and merges with any local-only records saved during the wizard so the
-// dashboard populates the moment the tx confirms even before Supabase
-// picks it up.
+// Pump.fun-style dashboard: AI agent-launched tokens are the primary
+// content. Top stats stay for quick context, everything else (the old
+// Attention / Community / Execution phases) was either redundant with
+// the /launch wizard or repeated info already on this page.
+// Comma-separated list of admin wallet pubkeys allowed to wipe history.
+// Set NEXT_PUBLIC_KOKI_ADMIN_WALLETS in Vercel to your own wallet pubkey
+// so only you see the dashboard "Clear all" button. Other users, even when
+// connected, never see it. (Server-side DELETE is still wallet-scoped, so
+// this is purely UI hardening.)
+const ADMIN_WALLETS = new Set(
+  (process.env.NEXT_PUBLIC_KOKI_ADMIN_WALLETS || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+);
 
 export default function CommandCenter() {
-  const { address, isConnected } = useAccount();
-  const [server, setServer] = useState<SavedLaunch[] | null>(null);
-  const [local, setLocal] = useState<SavedLaunch[]>([]);
+  const [launches, setLaunches] = useState<SavedLaunch[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const { publicKey } = useWallet();
+  const isAdmin = Boolean(
+    publicKey && ADMIN_WALLETS.has(publicKey.toBase58()),
+  );
 
   useEffect(() => {
-    setLocal(readLaunches());
+    setLaunches(readLaunches());
+    setHydrated(true);
   }, []);
 
-  useEffect(() => {
-    if (!address) {
-      setServer([]);
-      return;
-    }
-    let cancelled = false;
-    fetch(`/api/launches?wallet=${encodeURIComponent(address)}`, {
-      cache: "no-store",
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then(
-        (json: {
-          ok?: boolean;
-          launches?: Array<{
-            token_address: string;
-            pool_address: string | null;
-            ticker: string;
-            token_name: string;
-            logo_url: string | null;
-            pons_url: string | null;
-            explorer_url: string | null;
-            created_at: string;
-          }>;
-        } | null) => {
-          if (cancelled || !json?.ok) return;
-          setServer(
-            (json.launches ?? []).map((l) => ({
-              id: l.token_address,
-              createdAt: new Date(l.created_at).getTime(),
-              tokenName: l.token_name,
-              ticker: l.ticker,
-              token: l.token_address,
-              pool: l.pool_address ?? undefined,
-              logo: l.logo_url ?? undefined,
-              ponsUrl: l.pons_url ?? undefined,
-              explorerUrl: l.explorer_url ?? undefined,
-              status: "launched",
-            })),
-          );
-        },
-      )
-      .catch(() => setServer([]));
-    return () => {
-      cancelled = true;
-    };
-  }, [address]);
+  const liveLaunches = launches.filter(
+    (l) => !l.mock && l.status === "launched",
+  );
 
-  // Merge server + local, dedup by token address, newest first.
-  const merged = (() => {
-    const seen = new Set<string>();
-    const all = [...(server ?? []), ...local];
-    const out: SavedLaunch[] = [];
-    for (const l of all) {
-      const key = (l.token ?? l.id).toLowerCase();
-      if (seen.has(key)) continue;
-      seen.add(key);
-      out.push(l);
+  async function handleClearAll() {
+    const count = launches.length;
+    if (count === 0) return;
+    const ok = window.confirm(
+      `Clear all ${count} launch record${count === 1 ? "" : "s"} from your KOKi history?\n\n` +
+        "Onchain tokens themselves stay live on Solana, this only wipes " +
+        "what KOKi displays in your dashboard.",
+    );
+    if (!ok) return;
+
+    setClearing(true);
+    const wallet = publicKey?.toBase58();
+    const res = await clearLaunchesEverywhere(wallet);
+    setLaunches([]);
+    setClearing(false);
+
+    if (res.serverDeleted > 0) {
+      window.alert(
+        `Cleared. ${res.serverDeleted} record${res.serverDeleted === 1 ? "" : "s"} removed from server, local cache wiped.`,
+      );
     }
-    return out.sort((a, b) => b.createdAt - a.createdAt);
-  })();
+  }
 
   return (
     <div className="space-y-10 pb-16">
+      {/* Token gallery */}
       <section className="mx-auto max-w-6xl px-6">
         <div className="flex items-end justify-between gap-4 mb-6 flex-wrap">
           <div>
@@ -92,35 +79,42 @@ export default function CommandCenter() {
               AGENT-LAUNCHED TOKENS
             </span>
             <h2 className="text-[26px] md:text-[30px] font-black tracking-tight mt-1">
-              Tokens shipped by your HAMR agent
+              Tokens shipped by KOKi agents
             </h2>
             <p className="text-[13px] text-ink-300/70 mt-1 font-medium max-w-xl">
-              Every memecoin launched through the HAMR agent from{" "}
-              {isConnected && address
-                ? `${address.slice(0, 6)}…${address.slice(-4)}`
-                : "your wallet"}
-              , on Robinhood Chain.
+              Every memecoin launched through the KOKi agent, name, ticker,
+              mint, and the meme art that shipped to Pump.fun. Click any card
+              to open the live monitor.
             </p>
           </div>
-          <Link href="/launch" className="btn btn-primary !py-2.5 !px-4 !text-sm">
-            <Rocket className="h-4 w-4" />
-            New launch
-          </Link>
+          <div className="flex items-center gap-2">
+            {hydrated && isAdmin && launches.length > 0 && (
+              <button
+                type="button"
+                onClick={handleClearAll}
+                disabled={clearing}
+                className="btn btn-secondary !py-2.5 !px-3 !text-xs disabled:opacity-50"
+                aria-label="Clear all launch history"
+                title="Admin: clear all launch history (onchain tokens stay live)"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                {clearing ? "Clearing…" : "Clear all"}
+              </button>
+            )}
+            <Link href="/launch" className="btn btn-primary !py-2.5 !px-4 !text-sm">
+              <Rocket className="h-4 w-4" />
+              New launch
+            </Link>
+          </div>
         </div>
 
-        {!isConnected ? (
-          <EmptyPrompt
-            title="Connect a wallet"
-            body="Your dashboard is scoped to the connected wallet — plug MetaMask, Rainbow, or Robinhood Wallet in from the header and your launches show up here."
-          />
-        ) : merged.length === 0 ? (
-          <EmptyPrompt
-            title="No launches yet"
-            body="Run Auto-pilot or bring your own concept. Every token you ship lands here with a live monitor and Blockscout link."
-          />
+        {!hydrated ? (
+          <SkeletonGrid />
+        ) : liveLaunches.length === 0 ? (
+          <EmptyState />
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {merged.map((l, i) => (
+            {liveLaunches.map((l, i) => (
               <TokenCard key={l.id} launch={l} idx={i} />
             ))}
           </div>
@@ -130,25 +124,72 @@ export default function CommandCenter() {
   );
 }
 
-function TokenCard({ launch, idx }: { launch: SavedLaunch; idx: number }) {
-  const monitorHref = launch.token
-    ? `/launches/${launch.token}`
+/* ─────────── token card with lazy meme image ─────────── */
+
+function TokenCard({ launch, idx = 0 }: { launch: SavedLaunch; idx?: number }) {
+  const [imgUrl, setImgUrl] = useState<string | null>(null);
+  const stats = usePumpCoin(launch.mintPubkey);
+
+  useEffect(() => {
+    if (!launch.metadataUri) return;
+
+    // Resolve the meme image once per token and cache it locally so the
+    // dashboard doesn't refetch on every visit. metadataUri points at a
+    // Pump.fun IPFS JSON whose `image` field is the actual asset URL.
+    const cacheKey = `koki:img:${launch.mintPubkey || launch.id}`;
+    try {
+      const cached = window.localStorage.getItem(cacheKey);
+      if (cached) {
+        setImgUrl(cached);
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+
+    let cancelled = false;
+    fetch(launch.metadataUri, { cache: "force-cache" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((meta) => {
+        if (cancelled) return;
+        const url = meta && typeof meta.image === "string" ? meta.image : null;
+        if (url) {
+          setImgUrl(url);
+          try {
+            window.localStorage.setItem(cacheKey, url);
+          } catch {
+            /* quota, ignore */
+          }
+        }
+      })
+      .catch(() => {
+        /* network, fallback handled by render below */
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [launch.metadataUri, launch.mintPubkey, launch.id]);
+
+  const monitorHref = launch.mintPubkey
+    ? `/launches/${launch.mintPubkey}`
     : "/launches";
+
   return (
     <Link
       href={monitorHref}
       className="card card-hover group flex flex-col overflow-hidden !p-0 launch-card-anim"
       style={{ animationDelay: `${Math.min(idx, 12) * 60}ms` }}
     >
+      {/* Meme image / fallback tile */}
       <div className="aspect-square w-full bg-koki-500 overflow-hidden relative border-b border-[var(--border-strong)]">
-        {launch.logo ? (
-          <Image
-            src={launch.logo}
+        {imgUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imgUrl}
             alt={launch.tokenName}
-            fill
-            sizes="200px"
-            unoptimized
-            className="object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+            loading="lazy"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -158,6 +199,8 @@ function TokenCard({ launch, idx }: { launch: SavedLaunch; idx: number }) {
           </div>
         )}
       </div>
+
+      {/* Body */}
       <div className="p-3.5 flex-1 flex flex-col gap-2">
         <div className="flex items-baseline justify-between gap-2 min-w-0">
           <div className="text-[14px] font-black tracking-tight truncate">
@@ -168,48 +211,123 @@ function TokenCard({ launch, idx }: { launch: SavedLaunch; idx: number }) {
           </span>
         </div>
         <div className="text-[10px] text-ink-300/55 font-mono truncate">
-          {launch.token
-            ? `${launch.token.slice(0, 6)}…${launch.token.slice(-4)}`
-            : "-"}
+          {shortAddr(launch.mintPubkey || "-")}
         </div>
+
+        {/* Live market cap from Pump.fun. Always show the row so the user
+            can see when data hasn't arrived yet, much better debug than
+            the row silently disappearing on API failure. */}
+        <div className="flex items-baseline justify-between gap-2 pt-1">
+          <span className="text-[10px] font-bold text-ink-300/55 uppercase tracking-wider">
+            Mcap
+          </span>
+          <span className="text-[13px] font-black tabular-nums tracking-tight">
+            {stats ? formatMcUsd(stats.marketCapUsd) : "-"}
+          </span>
+        </div>
+        {stats && stats.bondingProgress !== null && (
+          <BondingBar progress={stats.bondingProgress} complete={stats.complete} />
+        )}
+
         <div className="flex items-center justify-between gap-2 mt-auto pt-2">
+          <Badge
+            tone={stats?.complete ? "live" : "neutral"}
+            className="!h-[18px] !text-[9px] !px-2"
+          >
+            {stats?.complete ? "Graduated" : "Launched"}
+          </Badge>
           <span className="text-[10px] text-ink-300/55 font-bold">
             {new Date(launch.createdAt).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
             })}
           </span>
-          {launch.ponsUrl && (
-            <a
-              href={launch.ponsUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1 text-[10px] font-extrabold text-ink-300/72 hover:text-ink-300 hover:underline"
-            >
-              View <ArrowUpRight className="h-2.5 w-2.5" />
-            </a>
-          )}
         </div>
+        {launch.pumpUrl && (
+          <a
+            href={launch.pumpUrl}
+            target="_blank"
+            rel="noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 text-[10px] font-extrabold text-ink-300/72 hover:text-ink-300 hover:underline"
+          >
+            Pump.fun <ExternalLink className="h-2.5 w-2.5" />
+          </a>
+        )}
       </div>
     </Link>
   );
 }
 
-function EmptyPrompt({ title, body }: { title: string; body: string }) {
+/* ─────────── states ─────────── */
+
+function EmptyState() {
   return (
     <div className="card !p-10 text-center">
-      <div className="text-[20px] font-black tracking-tight">{title}</div>
+      <div className="text-[20px] font-black tracking-tight">
+        No agent launches yet
+      </div>
       <p className="text-[13px] text-ink-300/70 mt-2 max-w-md mx-auto font-medium">
-        {body}
+        Send a prompt or hit Auto-pilot, and the KOKi agent will draft and
+        ship a memecoin to Pump.fun. Every coin you launch shows up here.
       </p>
       <Link
         href="/launch"
         className="btn btn-primary !py-2.5 !px-4 !text-sm mt-6 inline-flex"
       >
-        <Rocket className="h-4 w-4" />
         Launch your first
+        <ArrowUpRight className="h-4 w-4" />
       </Link>
     </div>
   );
+}
+
+function SkeletonGrid() {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="card !p-0 overflow-hidden animate-pulse">
+          <div className="aspect-square w-full bg-koki-500/40 border-b border-[var(--border-strong)]" />
+          <div className="p-3.5 space-y-2">
+            <div className="h-3.5 bg-ink-1000/10 rounded w-3/4" />
+            <div className="h-2.5 bg-ink-1000/10 rounded w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function BondingBar({
+  progress,
+  complete,
+}: {
+  progress: number;
+  complete: boolean;
+}) {
+  const pct = Math.max(0, Math.min(1, progress)) * 100;
+  return (
+    <div className="space-y-1 pt-1">
+      <div className="flex items-baseline justify-between text-[9px] font-bold text-ink-300/55 uppercase tracking-wider">
+        <span>Bonding</span>
+        <span className="tabular-nums">{pct.toFixed(0)}%</span>
+      </div>
+      <div className="h-[5px] w-full rounded-full bg-ink-1000/40 overflow-hidden">
+        <div
+          className="h-full relative bg-koki-500 transition-all duration-500"
+          style={{ width: `${pct}%` }}
+        >
+          {!complete && (
+            <span className="absolute inset-0 bonding-shimmer pointer-events-none" />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function shortAddr(addr: string): string {
+  if (!addr) return "-";
+  if (addr.length <= 12) return addr;
+  return `${addr.slice(0, 5)}…${addr.slice(-5)}`;
 }

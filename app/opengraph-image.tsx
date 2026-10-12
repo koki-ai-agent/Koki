@@ -1,14 +1,12 @@
 import { ImageResponse } from "next/og";
 
-// Social-share preview image for hamr.fun. Renders at 1200×630, the
+// Social-share preview image for koki.ai. Renders at 1200×630, the
 // canonical Open Graph size used by X (Twitter), Discord, Telegram,
 // Slack, and most messengers. Next.js auto-discovers this file and
 // emits <meta property="og:image"> + <meta name="twitter:image">.
-//
-// White canvas + charcoal type matches the site's monochrome theme.
 
 export const runtime = "edge";
-export const alt = "HAMR.fun, autonomous meme coin launch agent";
+export const alt = "KOKi.ai, Grok native meme coin launch agent";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -19,33 +17,47 @@ export default function OpengraphImage() {
         style={{
           width: "100%",
           height: "100%",
-          background: "#FFFFFF",
+          background: "#E55B14",
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          color: "#0F1114",
+          color: "#0B0B0B",
           fontFamily: "Inter, sans-serif",
         }}
       >
-        {/* Top — wordmark */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 16,
-            fontSize: 80,
-            fontWeight: 900,
-            letterSpacing: "-3px",
-            lineHeight: 1,
-            color: "#0F1114",
-          }}
-        >
-          <span>hamr</span>
-          <span style={{ color: "#0F1114", opacity: 0.55 }}>.fun</span>
+        {/* Top, wordmark */}
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div
+            style={{
+              fontSize: 80,
+              fontWeight: 900,
+              letterSpacing: "-3px",
+              lineHeight: 1,
+              color: "#0B0B0B",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            koki
+            <span style={{ color: "#0B0B0B" }}>.ai</span>
+            {/* Tiny paw on the i */}
+            <svg
+              width="48"
+              height="48"
+              viewBox="0 0 32 32"
+              style={{ marginLeft: -16, marginTop: -42 }}
+            >
+              <ellipse cx="16" cy="22" rx="7.5" ry="6" fill="#FFFFFF" stroke="#0B0B0B" strokeWidth="2" />
+              <ellipse cx="6.5" cy="13" rx="2.6" ry="3.2" fill="#FFFFFF" stroke="#0B0B0B" strokeWidth="2" />
+              <ellipse cx="11.5" cy="8.5" rx="2.6" ry="3.2" fill="#FFFFFF" stroke="#0B0B0B" strokeWidth="2" />
+              <ellipse cx="20.5" cy="8.5" rx="2.6" ry="3.2" fill="#FFFFFF" stroke="#0B0B0B" strokeWidth="2" />
+              <ellipse cx="25.5" cy="13" rx="2.6" ry="3.2" fill="#FFFFFF" stroke="#0B0B0B" strokeWidth="2" />
+            </svg>
+          </div>
         </div>
 
-        {/* Middle — headline */}
+        {/* Middle, headline */}
         <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
           <div
             style={{
@@ -53,7 +65,7 @@ export default function OpengraphImage() {
               fontWeight: 900,
               letterSpacing: "-4px",
               lineHeight: 0.95,
-              color: "#0F1114",
+              color: "#0B0B0B",
               display: "flex",
               flexDirection: "column",
             }}
@@ -62,8 +74,8 @@ export default function OpengraphImage() {
             <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
               <span
                 style={{
-                  background: "#2E353F",
-                  color: "#FFFFFF",
+                  background: "#0B0B0B",
+                  color: "#E55B14",
                   padding: "0 24px",
                   borderRadius: 12,
                   display: "flex",
@@ -79,23 +91,23 @@ export default function OpengraphImage() {
             style={{
               fontSize: 28,
               fontWeight: 600,
-              color: "#4B535E",
+              color: "#0B0B0B",
+              opacity: 0.78,
               maxWidth: 900,
               display: "flex",
             }}
           >
-            Autonomous meme coin launch agent. From X meme to launch on
-            Robinhood Chain in one signature.
+            Grok native meme coin launch agent. From X native meme to Pump.fun in one signature.
           </div>
         </div>
 
-        {/* Bottom — chips */}
+        {/* Bottom, chips */}
         <div
           style={{
             display: "flex",
             gap: 12,
             alignItems: "center",
-            color: "#0F1114",
+            color: "#0B0B0B",
             fontWeight: 800,
             fontSize: 18,
           }}
@@ -105,11 +117,11 @@ export default function OpengraphImage() {
               key={c}
               style={{
                 display: "flex",
-                background: "#F6F7F8",
-                color: "#0F1114",
+                background: "#FFF7ED",
+                color: "#0B0B0B",
                 padding: "8px 16px",
                 borderRadius: 999,
-                border: "2px solid #0F1114",
+                border: "2px solid #0B0B0B",
                 letterSpacing: "1px",
               }}
             >
