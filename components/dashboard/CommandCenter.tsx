@@ -17,12 +17,12 @@ import { usePumpCoin, formatMcUsd } from "@/lib/hooks/usePumpCoin";
 // Attention / Community / Execution phases) was either redundant with
 // the /launch wizard or repeated info already on this page.
 // Comma-separated list of admin wallet pubkeys allowed to wipe history.
-// Set NEXT_PUBLIC_KOKI_ADMIN_WALLETS in Vercel to your own wallet pubkey
+// Set NEXT_PUBLIC_HAMR_ADMIN_WALLETS in Vercel to your own wallet pubkey
 // so only you see the dashboard "Clear all" button. Other users, even when
 // connected, never see it. (Server-side DELETE is still wallet-scoped, so
 // this is purely UI hardening.)
 const ADMIN_WALLETS = new Set(
-  (process.env.NEXT_PUBLIC_KOKI_ADMIN_WALLETS || "")
+  (process.env.NEXT_PUBLIC_HAMR_ADMIN_WALLETS || "")
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean),
@@ -50,9 +50,9 @@ export default function CommandCenter() {
     const count = launches.length;
     if (count === 0) return;
     const ok = window.confirm(
-      `Clear all ${count} launch record${count === 1 ? "" : "s"} from your KOKi history?\n\n` +
+      `Clear all ${count} launch record${count === 1 ? "" : "s"} from your HAMR history?\n\n` +
         "Onchain tokens themselves stay live on Solana, this only wipes " +
-        "what KOKi displays in your dashboard.",
+        "what HAMR displays in your dashboard.",
     );
     if (!ok) return;
 
@@ -79,10 +79,10 @@ export default function CommandCenter() {
               AGENT-LAUNCHED TOKENS
             </span>
             <h2 className="text-[26px] md:text-[30px] font-black tracking-tight mt-1">
-              Tokens shipped by KOKi agents
+              Tokens shipped by HAMR agents
             </h2>
             <p className="text-[13px] text-ink-300/70 mt-1 font-medium max-w-xl">
-              Every memecoin launched through the KOKi agent, name, ticker,
+              Every memecoin launched through the HAMR agent, name, ticker,
               mint, and the meme art that shipped to Pump.fun. Click any card
               to open the live monitor.
             </p>
@@ -136,7 +136,7 @@ function TokenCard({ launch, idx = 0 }: { launch: SavedLaunch; idx?: number }) {
     // Resolve the meme image once per token and cache it locally so the
     // dashboard doesn't refetch on every visit. metadataUri points at a
     // Pump.fun IPFS JSON whose `image` field is the actual asset URL.
-    const cacheKey = `koki:img:${launch.mintPubkey || launch.id}`;
+    const cacheKey = `hamr:img:${launch.mintPubkey || launch.id}`;
     try {
       const cached = window.localStorage.getItem(cacheKey);
       if (cached) {
@@ -268,7 +268,7 @@ function EmptyState() {
         No agent launches yet
       </div>
       <p className="text-[13px] text-ink-300/70 mt-2 max-w-md mx-auto font-medium">
-        Send a prompt or hit Auto-pilot, and the KOKi agent will draft and
+        Send a prompt or hit Auto-pilot, and the HAMR agent will draft and
         ship a memecoin to Pump.fun. Every coin you launch shows up here.
       </p>
       <Link

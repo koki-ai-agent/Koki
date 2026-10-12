@@ -9,9 +9,9 @@ export default function LaunchHistoryPage() {
       <PageHeader
         eyebrow="Public board"
         title="All Launches"
-        description="Every memecoin every KOKi agent has shipped, across all wallets. Newest first. Click any token to open the live monitor on Pump.fun."
+        description="Every memecoin every HAMR agent has shipped, across all wallets. Newest first. Click any token to open the live monitor on Pump.fun."
         breadcrumbs={[
-          { href: "/", label: "KOKi" },
+          { href: "/", label: "HAMR" },
           { label: "All Launches" },
         ]}
         actions={

@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
           // Pump.fun gates a bare fetch, pretend to be a normal browser
           // so we get past the basic UA filter.
           "User-Agent":
-            "Mozilla/5.0 (compatible; KOKi-agent/1.0; +https://kokiai.app)",
+            "Mozilla/5.0 (compatible; HAMR-agent/1.0; +https://hamr.fun)",
           Accept: "application/json, text/plain, */*",
           Origin: "https://pump.fun",
           Referer: "https://pump.fun/",

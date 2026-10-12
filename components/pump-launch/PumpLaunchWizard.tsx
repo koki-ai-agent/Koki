@@ -206,12 +206,12 @@ export default function PumpLaunchWizard() {
         if (data.fallbackReason) setFallbackReason(data.fallbackReason);
       } else {
         setKit(generateMockLaunchKit(c));
-        setProviderMeta({ provider: "mock", model: "koki-mock-generator" });
+        setProviderMeta({ provider: "mock", model: "hamr-mock-generator" });
         setFallbackReason(data.error || "API returned unexpected response");
       }
     } catch (err) {
       setKit(generateMockLaunchKit(concept));
-      setProviderMeta({ provider: "mock", model: "koki-mock-generator" });
+      setProviderMeta({ provider: "mock", model: "hamr-mock-generator" });
       setFallbackReason(err instanceof Error ? err.message : "Network error");
     } finally {
       setGenerating(false);
@@ -648,13 +648,13 @@ function ConceptStep({
           <div className="min-w-0">
             <div className="text-[15px] font-black tracking-tight">
               {autoPiloting
-                ? "KOKi agent is scanning X right now."
+                ? "HAMR agent is scanning X right now."
                 : "One click. The day's biggest meme becomes your token."}
             </div>
             <div className="text-[12px] font-medium opacity-85 mt-0.5">
               {autoPiloting
                 ? "Reading X live, locking onto the most viral post of the day, naming it, building the kit, prepping a one-signature launch. Hold tight."
-                : "The KOKi agent reads X in real time, locks onto the most viral meme of the day, picks the name, ticker, and full kit, then ships the token to Pump.fun. You sign once."}
+                : "The HAMR agent reads X in real time, locks onto the most viral meme of the day, picks the name, ticker, and full kit, then ships the token to Pump.fun. You sign once."}
             </div>
             {autoReasoning && (
               <div className="text-[12px] font-bold mt-1.5 opacity-95">
@@ -682,7 +682,7 @@ function ConceptStep({
           {autoPiloting ? (
             <>
               <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              KOKi agent thinking…
+              HAMR agent thinking…
             </>
           ) : (
             <>
@@ -714,14 +714,14 @@ function ConceptStep({
           <Input
             value={concept.tokenName}
             onChange={(e) => setField("tokenName", e.target.value)}
-            placeholder="KOKi"
+            placeholder="HAMR"
           />
         </Field>
         <Field label="Ticker" hint="3–6 chars, A-Z and numbers">
           <Input
             value={concept.ticker}
             onChange={(e) => setField("ticker", e.target.value.toUpperCase())}
-            placeholder="KOKI"
+            placeholder="HAMR"
             maxLength={6}
           />
         </Field>
@@ -738,7 +738,7 @@ function ConceptStep({
           <Input
             value={concept.theme}
             onChange={(e) => setField("theme", e.target.value)}
-            placeholder="Shiba paw / KOKi mascot"
+            placeholder="Shiba paw / HAMR mascot"
           />
         </Field>
         <Field label="Target audience">
@@ -1115,7 +1115,7 @@ function WalletStep({
         {connected && <Badge tone="live">Connected</Badge>}
       </div>
       <p className="text-sm text-ink-300/72 max-w-xl">
-        KOKi does not store private keys and does not ask for seed phrases. Your wallet (Phantom or Solflare) is the only signer. Pump.fun runs on Solana <span className="text-amber-300 font-semibold">mainnet</span>.
+        HAMR does not store private keys and does not ask for seed phrases. Your wallet (Phantom or Solflare) is the only signer. Pump.fun runs on Solana <span className="text-amber-300 font-semibold">mainnet</span>.
       </p>
 
       <div className="flex flex-wrap items-center gap-3">

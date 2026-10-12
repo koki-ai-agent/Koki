@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { usePumpCoin, formatMcUsd } from "@/lib/hooks/usePumpCoin";
 
 // Landing-page social proof: a live preview of the public 'All Launches'
-// board. Shows the freshest 8 KOKi-shipped tokens with image, ticker,
+// board. Shows the freshest 8 HAMR-shipped tokens with image, ticker,
 // market cap, and bonding curve progress straight from Pump.fun. The CTA
 // links to /launches for the full board.
 //
@@ -60,7 +60,7 @@ export default function LiveLaunchesSection() {
               <span className="opacity-60">Real wallets. Real markets.</span>
             </h2>
             <p className="mt-4 text-ink-300/80 text-base md:text-lg leading-snug max-w-xl font-medium">
-              Every memecoin shipped through the KOKi agent, across all
+              Every memecoin shipped through the HAMR agent, across all
               wallets, with live market cap and bonding curve progress
               straight from Pump.fun.
             </p>
@@ -94,7 +94,7 @@ function PreviewCard({ launch, idx }: { launch: PublicLaunch; idx: number }) {
 
   useEffect(() => {
     if (!launch.metadata_uri) return;
-    const cacheKey = `koki:img:${launch.mint_pubkey}`;
+    const cacheKey = `hamr:img:${launch.mint_pubkey}`;
     try {
       const cached = window.localStorage.getItem(cacheKey);
       if (cached) {

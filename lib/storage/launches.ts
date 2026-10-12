@@ -68,7 +68,7 @@ export function saveLaunch(rec: SavedLaunch) {
         devBuyInSol: rec.devBuyInSol,
         mock: rec.mock ?? false,
         // Anchor X-post URL — lets /api/auto-launch hard-exclude this on
-        // future Grok picks so no two KOKi tokens come from the same post.
+        // future Grok picks so no two HAMR tokens come from the same post.
         sourceXUrl: rec.sourceXUrl,
       }),
     }).catch(() => {
@@ -147,7 +147,7 @@ export function clearLaunches() {
   try {
     for (let i = window.localStorage.length - 1; i >= 0; i--) {
       const k = window.localStorage.key(i);
-      if (k && k.startsWith("koki:img:")) window.localStorage.removeItem(k);
+      if (k && k.startsWith("hamr:img:")) window.localStorage.removeItem(k);
     }
   } catch {
     /* ignore */

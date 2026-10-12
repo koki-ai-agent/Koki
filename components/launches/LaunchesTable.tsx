@@ -6,7 +6,7 @@ import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { usePumpCoin, formatMcUsd } from "@/lib/hooks/usePumpCoin";
 
-// Public 'All Launches' gallery, shows every memecoin every KOKi agent
+// Public 'All Launches' gallery, shows every memecoin every HAMR agent
 // has shipped, across all wallets. Hits /api/launches with no `wallet`
 // param; the API returns the global list (filtered to status='launched',
 // mock=false) so this is a real social-proof / discovery surface, not a
@@ -64,7 +64,7 @@ export default function LaunchesTable() {
         <p className="text-[13px] text-ink-300/70 mt-2 max-w-md mx-auto font-medium">
           {error
             ? "Couldn't load the public launch board right now. Try refreshing."
-            : "Be the first to ship a memecoin through KOKi. Every shipped token shows up here for everyone to see."}
+            : "Be the first to ship a memecoin through HAMR. Every shipped token shows up here for everyone to see."}
         </p>
         <Link
           href="/launch"
@@ -97,7 +97,7 @@ function PublicLaunchCard({
 
   useEffect(() => {
     if (!launch.metadata_uri) return;
-    const cacheKey = `koki:img:${launch.mint_pubkey}`;
+    const cacheKey = `hamr:img:${launch.mint_pubkey}`;
     try {
       const cached = window.localStorage.getItem(cacheKey);
       if (cached) {

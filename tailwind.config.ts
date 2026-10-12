@@ -85,30 +85,30 @@ const config: Config = {
         },
         // ── KOKi orange — unchanged. The single warm accent on dark. ────
         koki: {
-          50: "#FFF4ED",
-          100: "#FFE0CB",
-          200: "#FFC195",
-          300: "#FF9D5C",
-          400: "#FF7A2E",
-          500: "#E55B14",   // logo color
-          600: "#BF4710",
-          700: "#97380E",
-          800: "#6F2A0B",
-          900: "#4A1C07",
+          50: "#F5F3FF",
+          100: "#EDE9FE",
+          200: "#DDD6FE",
+          300: "#C4B5FD",
+          400: "#A78BFA",
+          500: "#8B5CF6",   // logo color
+          600: "#7C3AED",
+          700: "#6D28D9",
+          800: "#5B21B6",
+          900: "#4C1D95",
         },
         // ── Legacy alias so any lingering "claw-*" classes still render
         // (mirrors KOKi orange). Prefer `koki-*` going forward.
         claw: {
-          50: "#FFF4ED",
-          100: "#FFE0CB",
-          200: "#FFC195",
-          300: "#FF9D5C",
-          400: "#FF7A2E",
-          500: "#E55B14",
-          600: "#BF4710",
-          700: "#97380E",
-          800: "#6F2A0B",
-          900: "#4A1C07",
+          50: "#F5F3FF",
+          100: "#EDE9FE",
+          200: "#DDD6FE",
+          300: "#C4B5FD",
+          400: "#A78BFA",
+          500: "#8B5CF6",
+          600: "#7C3AED",
+          700: "#6D28D9",
+          800: "#5B21B6",
+          900: "#4C1D95",
         },
         // ── Cream — REMAPPED to dark surfaces. Anywhere components used
         //    `bg-cream-50` for "card surface" now correctly gets the dark

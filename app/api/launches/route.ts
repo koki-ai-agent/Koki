@@ -16,7 +16,7 @@ interface LaunchInsert {
   /**
    * URL of the originating viral X post that inspired this token, when
    * known. Recorded so /api/auto-launch can hard-exclude it from future
-   * Grok picks, no two KOKi-shipped tokens should ever come from the
+   * Grok picks, no two HAMR-shipped tokens should ever come from the
    * same X post (deduplication across all wallets).
    */
   sourceXUrl?: string;
@@ -137,7 +137,7 @@ export async function GET(req: NextRequest) {
  * DELETE ?wallet=<pubkey>, clear all launch history rows for a wallet.
  *
  * Onchain tokens themselves are immutable, this only removes the rows
- * KOKi has tracked. The user's dashboard goes back to an empty state.
+ * HAMR has tracked. The user's dashboard goes back to an empty state.
  *
  * Without Supabase, this still returns ok:true so the client can clear
  * its localStorage even when there's no server-side state to clean.

@@ -110,7 +110,7 @@ export default function WalletTrackingAgent({
         </div>
         <p className="text-sm text-ink-300/72 max-w-2xl">
           Pull a public Solana wallet's onchain footprint and let Grok turn
-          the raw data into an X native intelligence brief. Read-only, KOKi
+          the raw data into an X native intelligence brief. Read-only, HAMR
           never asks for private keys.
         </p>
 

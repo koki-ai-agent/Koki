@@ -4,13 +4,13 @@ import type { LaunchRecord } from "./types";
 export const MOCK_LAUNCH_HISTORY: LaunchRecord[] = [
   {
     id: "lch_001",
-    tokenName: "Sample KOKi",
-    ticker: "KOKI",
+    tokenName: "Sample HAMR",
+    ticker: "HAMR",
     chain: "solana",
     status: "launched",
     createdAt: "2026-04-28T10:21:00Z",
     txSignature: "MockTx111111111111111111111111111111111111",
-    pumpUrl: "https://pump.fun/coin/MOCK_KOKI",
+    pumpUrl: "https://pump.fun/coin/MOCK_HAMR",
     mock: true,
   },
   {

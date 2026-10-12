@@ -30,7 +30,7 @@ interface CacheEntry {
 function readCache(mint: string): PumpCoinStats | null {
   if (typeof window === "undefined") return null;
   try {
-    const raw = window.sessionStorage.getItem(`koki:pump:${mint}`);
+    const raw = window.sessionStorage.getItem(`hamr:pump:${mint}`);
     if (!raw) return null;
     const entry = JSON.parse(raw) as CacheEntry;
     if (Date.now() - entry.at > TTL_MS) return null;
@@ -44,7 +44,7 @@ function writeCache(mint: string, stats: PumpCoinStats) {
   if (typeof window === "undefined") return;
   try {
     window.sessionStorage.setItem(
-      `koki:pump:${mint}`,
+      `hamr:pump:${mint}`,
       JSON.stringify({ at: Date.now(), stats } satisfies CacheEntry),
     );
   } catch {

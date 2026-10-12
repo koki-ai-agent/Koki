@@ -5,7 +5,7 @@ import EnginesSection from "@/components/landing/EnginesSection";
 import SafetySection from "@/components/landing/SafetySection";
 import FinalCTA from "@/components/landing/FinalCTA";
 
-// KOKi, single-product memecoin launch agent.
+// HAMR, single-product memecoin launch agent.
 //
 // Pump.fun-style ordering: live token gallery sits FIRST so the visitor
 // sees real shipped coins immediately, then the pitch underneath. The
