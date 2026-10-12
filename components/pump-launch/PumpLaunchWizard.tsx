@@ -19,6 +19,7 @@ import {
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { Keypair, VersionedTransaction } from "@solana/web3.js";
+import { confirmSignature } from "@/lib/solana/confirm";
 import { StepIndicator } from "@/components/ui/StepIndicator";
 import { Field, Input, Select, Textarea } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
@@ -477,19 +478,17 @@ export default function PumpLaunchWizard() {
 
       setLaunchPhase("confirming");
 
-      // 7. Wait for confirmation
-      const blockhashInfo = await connection.getLatestBlockhash("confirmed");
-      const confirm = await connection.confirmTransaction(
-        {
-          signature,
-          blockhash: blockhashInfo.blockhash,
-          lastValidBlockHeight: blockhashInfo.lastValidBlockHeight,
-        },
-        "confirmed"
-      );
-      if (confirm.value.err) {
+      // 7. Wait for confirmation — poll signature status (no websocket, no
+      //    block-height race; see lib/solana/confirm.ts for the bug this fixes).
+      const confirm = await confirmSignature(connection, signature);
+      if (confirm.status === "failed") {
         throw new Error(
-          `Transaction failed: ${JSON.stringify(confirm.value.err)}`
+          `Transaction failed: ${JSON.stringify(confirm.err)}`
+        );
+      }
+      if (confirm.status === "timeout") {
+        throw new Error(
+          `Confirmation timed out, but the transaction WAS submitted. Check https://solscan.io/tx/${signature} before retrying — the token may already be live at https://pump.fun/coin/${mintKeypair.publicKey.toBase58()}`
         );
       }
 
