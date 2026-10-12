@@ -8,6 +8,8 @@ const NAV = [
   { href: "/dashboard", label: "My Launches" },
   { href: "/launch", label: "Launch" },
   { href: "/launches", label: "All Launches" },
+  // The narrative: why HAMR, $HAMR tokenomics, Solana → GIWA roadmap.
+  { href: "/vision", label: "Vision" },
 ];
 
 export default function Navbar() {
