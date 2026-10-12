@@ -109,7 +109,7 @@ function PublicLaunchCard({
     }
 
     let cancelled = false;
-    fetch(launch.metadata_uri, { cache: "force-cache" })
+    fetch(`/api/token-meta?uri=${encodeURIComponent(launch.metadata_uri)}`, { cache: "force-cache" })
       .then((r) => (r.ok ? r.json() : null))
       .then((meta) => {
         if (cancelled) return;

@@ -148,7 +148,7 @@ function TokenCard({ launch, idx = 0 }: { launch: SavedLaunch; idx?: number }) {
     }
 
     let cancelled = false;
-    fetch(launch.metadataUri, { cache: "force-cache" })
+    fetch(`/api/token-meta?uri=${encodeURIComponent(launch.metadataUri)}`, { cache: "force-cache" })
       .then((r) => (r.ok ? r.json() : null))
       .then((meta) => {
         if (cancelled) return;

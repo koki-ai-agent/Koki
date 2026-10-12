@@ -590,6 +590,7 @@ export default function PumpLaunchWizard() {
           onLaunch={runRealLaunch}
           launchPhase={launchPhase}
           launchError={launchError}
+          logoDataUrl={concept.logoDataUrl}
         />
       )}
 
@@ -1149,6 +1150,7 @@ function SignStep({
   onLaunch,
   launchPhase,
   launchError,
+  logoDataUrl,
 }: {
   kit: LaunchKit;
   devBuySol: number;
@@ -1157,6 +1159,7 @@ function SignStep({
   onLaunch: () => void;
   launchPhase: LaunchPhase;
   launchError: string | null;
+  logoDataUrl?: string | null;
 }) {
   const isWorking = launchPhase !== "idle" && launchPhase !== "error";
 
@@ -1175,6 +1178,27 @@ function SignStep({
           <div className="mt-1 text-amber-200/80">
             Once signed and confirmed, the token is created onchain and cannot be undone. Verify name, ticker, description, and links one more time below.
           </div>
+        </div>
+      </div>
+
+      {/* The exact image that ships to IPFS — the one thing people most
+          want to eyeball before signing. */}
+      <div className="flex items-center gap-4">
+        {logoDataUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={logoDataUrl}
+            alt={`${kit.ticker} logo`}
+            className="h-20 w-20 rounded-xl object-cover border border-[var(--border-strong)] bg-bg-elevated"
+          />
+        ) : (
+          <div className="h-20 w-20 rounded-xl border border-dashed border-[var(--border-strong)] flex items-center justify-center text-[10px] font-bold text-ink-300/50 text-center px-1">
+            no logo
+          </div>
+        )}
+        <div className="text-xs text-ink-300/70 font-medium">
+          Token image as it will appear on Pump.fun.
+          {!logoDataUrl && " Go back and add one — launches without an image get ignored."}
         </div>
       </div>
 
